@@ -136,7 +136,7 @@
     const SUPABASE_URL = "https://qnzizwadygywroqxuszt.supabase.co";
     const SUPABASE_KEY = "sb_publishable_0R2DZniqqB2ueWAraBHNtA_FtotsnUs";
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let supabaseClient = null;
     let projects = [];
     let currentCategory = "All";
 
@@ -152,6 +152,7 @@
     }
 
     async function loadProjects() {
+      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       const grid = document.getElementById("projectGrid");
       grid.innerHTML = "正在读取作品...";
       const { data, error } = await supabaseClient
