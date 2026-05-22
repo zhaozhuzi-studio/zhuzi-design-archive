@@ -96,7 +96,7 @@
       inset: 0;
       background-image: url('./background.jpg');
       background-size: cover;
-      background-position: center bottom;
+      background-position: center;
       filter: blur(10px);
       transform: scale(1.08);
     }
@@ -587,27 +587,17 @@
         <button class="home-nav-btn" onclick="enterArchive('Side Table')">Side Table</button>
         <button class="home-nav-btn" onclick="enterArchive('Armchair')">Armchair</button>
         <button class="home-nav-btn" onclick="enterArchive('Ottoman')">Ottoman</button>
-
-        <div class="home-note">
-          A private product concept library for furniture development, collection planning and client recommendations.
-        </div>
       </aside>
 
       <div class="home-content">
         <p class="home-kicker">Private Design Portfolio</p>
         <h1>Furniture Concepts<br />for European Retailers</h1>
-        <p class="home-description">
-          A curated archive of cabinets, side tables, coffee tables, armchairs and ottomans, developed for European home retailers including JJA, DE, moemax and XXXLUTZ.
-        </p>
         <div class="home-meta">
           <span>Cabinet</span>
           <span>Side Table</span>
           <span>Armchair</span>
           <span>Ottoman</span>
           <span>Product Concept</span>
-        </div>
-        <div class="home-actions">
-          <button class="home-enter-btn" onclick="enterArchive('All')">Enter Archive</button>
         </div>
       </div>
     </div>
@@ -805,7 +795,7 @@
       grid.innerHTML = list.map(project => {
         const images = getImages(project);
         const mainImage = images[0] || "";
-        const projectId = String(project.id).replace(/'/g, "\\'");
+        const projectId = String(project.id).replace(/'/g, "\'");
 
         return `
           <article class="card" id="card-${projectId}">
