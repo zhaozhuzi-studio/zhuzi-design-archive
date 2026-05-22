@@ -167,7 +167,7 @@
       max-width: 860px;
       color: white;
       padding-left: clamp(24px, 8vw, 120px);
-      padding-right: 28vw;
+      padding-right: 18vw;
       position: relative;
       z-index: 4;
     }
@@ -180,13 +180,11 @@
       margin: 0 0 14px;
     }
 
-    .home-content h1 {
-      margin: 0;
-      font-size: clamp(42px, 5vw, 78px);
-      line-height: .98;
-      font-weight: 500;
-      letter-spacing: -.055em;
-      text-shadow: 0 12px 40px rgba(0,0,0,.16);
+    .home-content h1 {$1
+    }
+
+    .home-content h1 span {
+      white-space: nowrap;
     }
 
     .home-meta {
@@ -264,38 +262,54 @@
 
     .silk-waves {
       position: absolute;
-      right: -3vw;
+      right: -2vw;
       top: 0;
-      width: 34vw;
+      width: 32vw;
       height: 100vh;
       z-index: 3;
       pointer-events: none;
       overflow: hidden;
-      opacity: .92;
+      opacity: .9;
     }
 
-    .silk {
+    .wave-ribbon {
       position: absolute;
-      width: 170px;
-      height: 118vh;
-      top: -8vh;
-      border-radius: 48% 52% 45% 55%;
-      background: linear-gradient(90deg, rgba(255,250,244,.18), rgba(255,250,244,.62), rgba(181,165,148,.16));
-      border: 1px solid rgba(255,255,255,.22);
-      box-shadow: inset 22px 0 40px rgba(255,255,255,.18), inset -18px 0 38px rgba(90,78,67,.12), 0 18px 60px rgba(0,0,0,.10);
-      backdrop-filter: blur(4px);
-      transform-origin: center;
-      animation: silkFloat 9s ease-in-out infinite alternate;
+      inset: -8vh -4vw -8vh auto;
+      width: 34vw;
+      height: 116vh;
+      filter: drop-shadow(0 28px 46px rgba(0,0,0,.10));
     }
 
-    .silk-one { right: 190px; transform: rotate(-23deg); animation-delay: 0s; opacity: .76; }
-    .silk-two { right: 70px; transform: rotate(17deg); animation-delay: -2.2s; opacity: .68; }
-    .silk-three { right: -45px; transform: rotate(-13deg); animation-delay: -4.5s; opacity: .52; }
+    .wave-path {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      animation: waveFloat 9s ease-in-out infinite alternate;
+    }
 
-    @keyframes silkFloat {
-      0% { translate: 0 -18px; border-radius: 46% 54% 42% 58%; }
-      50% { translate: -22px 10px; border-radius: 58% 42% 55% 45%; }
-      100% { translate: 14px 28px; border-radius: 48% 52% 62% 38%; }
+    .wave-one {
+      stroke: rgba(255,250,244,.62);
+      stroke-width: 72;
+      filter: blur(.2px);
+    }
+
+    .wave-two {
+      stroke: rgba(255,255,255,.34);
+      stroke-width: 118;
+      animation-delay: -2s;
+      mix-blend-mode: screen;
+    }
+
+    .wave-three {
+      stroke: rgba(176,158,138,.22);
+      stroke-width: 44;
+      animation-delay: -4s;
+    }
+
+    @keyframes waveFloat {
+      0% { transform: translateX(0) translateY(-16px) scaleX(1); }
+      50% { transform: translateX(-26px) translateY(8px) scaleX(1.05); }
+      100% { transform: translateX(14px) translateY(28px) scaleX(.98); }
     }
 
     #archivePage,
@@ -614,9 +628,11 @@
     <div class="home-overlay"></div>
 
     <div class="silk-waves">
-      <div class="silk silk-one"></div>
-      <div class="silk silk-two"></div>
-      <div class="silk silk-three"></div>
+      <svg class="wave-ribbon" viewBox="0 0 420 1000" preserveAspectRatio="none" aria-hidden="true">
+        <path class="wave-path wave-two" d="M285 -60 C130 120 395 230 245 395 C110 545 380 650 220 840 C145 930 210 1025 250 1070" />
+        <path class="wave-path wave-one" d="M315 -80 C170 105 350 215 235 360 C90 540 365 650 210 820 C120 920 180 1015 235 1080" />
+        <path class="wave-path wave-three" d="M245 -80 C390 95 130 235 270 405 C405 560 130 690 295 855 C365 930 305 1020 260 1080" />
+      </svg>
     </div>
 
     <div class="home-layout">
@@ -633,7 +649,7 @@
 
       <div class="home-content">
         <p class="home-kicker">Private Design Portfolio</p>
-        <h1>Furniture Concepts<br />for European<br />Retailers</h1>
+        <h1><span>Furniture Concepts</span><br /><span>for European</span><br /><span>Retailers</span></h1>
 
         <div class="about-slider-wrap">
           <div class="about-slider-label">了解设计师更多信息</div>
