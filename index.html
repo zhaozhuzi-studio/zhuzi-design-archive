@@ -1,87 +1,1194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Design Archive</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/framer-motion/dist/framer-motion.umd.js"></script>
-<style>
-body { font-family: Arial, Helvetica, sans-serif; margin:0; background:#fefcf6; }
-.container { max-width: 960px; margin: 0 auto; padding: 2rem; }
-img { max-width:100%; border-radius:8px; transition: all .3s ease; }
-.thumbnail { width: 80px; height: 80px; object-fit: cover; cursor: pointer; border:2px solid transparent; border-radius:6px; transition: all .2s ease; }
-.thumbnail.active { border-color:#000; }
-.thumbnail:hover { transform: scale(1.1); }
-.product-info { background:white; padding:1rem; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,.12); margin-top:1rem; transition: opacity .3s ease; }
-.series-buttons button { padding: 6px 12px; border-radius:6px; border:1px solid #ccc; cursor:pointer; margin:4px; background:white; transition:all .2s; }
-.series-buttons button.active { background:#000; color:white; border-color:#000; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zhuzi Design Archive</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Instrument Sans', Arial, Helvetica, sans-serif;
+      background: #f7f3ee;
+      color: #26221f;
+    }
+
+    button, input, textarea, select { font-family: inherit; }
+
+    .password-screen {
+      position: fixed;
+      inset: 0;
+      background: #f7f3ee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .password-card {
+      width: 90%;
+      max-width: 420px;
+      background: #fffaf4;
+      padding: 36px;
+      border-radius: 24px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.08);
+      text-align: center;
+    }
+
+    .password-card h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: .02em;
+    }
+
+    .password-card p {
+      margin: 0 0 24px;
+      color: #8a7d70;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .password-card input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #ddd2c6;
+      border-radius: 999px;
+      background: #fff;
+      outline: none;
+      font-size: 15px;
+      margin-bottom: 14px;
+    }
+
+    .password-card button,
+    .admin-form button {
+      width: 100%;
+      border: none;
+      background: #2f2a25;
+      color: white;
+      padding: 14px 18px;
+      border-radius: 999px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .password-error {
+      margin-top: 12px;
+      color: #b05a4a;
+      font-size: 13px;
+      min-height: 20px;
+    }
+
+    /* Home screen */
+    .home-screen {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      display: none;
+      --bg-x: 0px;
+      --bg-y: 0px;
+      --shape-x: 0px;
+      --shape-y: 0px;
+    }
+
+    .home-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('./background.jpg');
+      background-size: cover;
+      background-position: center bottom;
+      filter: blur(10px);
+      transform: translate3d(var(--bg-x), var(--bg-y), 0) scale(1.1);
+      transition: transform .35s ease-out;
+    }
+
+    .home-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(36,31,27,.35), rgba(36,31,27,.18), rgba(247,243,238,.28));
+    }
+
+    .home-layout {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 235px 1fr;
+      gap: 0;
+      padding: 0;
+    }
+
+    .home-sidebar {
+      min-height: 100vh;
+      background: rgba(247,243,238,.78);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-right: 1px solid rgba(255,255,255,.38);
+      padding: 22vh 28px 42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      box-shadow: 16px 0 55px rgba(0,0,0,.08);
+    }
+
+    .home-brand-small {
+      font-size: 20px;
+      line-height: 1.25;
+      font-weight: 500;
+      color: #2f2a25;
+      margin-bottom: 34px;
+      letter-spacing: -.03em;
+    }
+
+    .home-nav-title {
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #9a8d80;
+      margin-bottom: 14px;
+    }
+
+    .home-nav-btn {
+      border: none;
+      background: transparent;
+      text-align: left;
+      padding: 11px 0;
+      font-size: 16px;
+      color: #3d352f;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(120,105,92,.18);
+      transition: .2s ease;
+    }
+
+    .home-nav-btn:hover {
+      color: #a67c52;
+      transform: translateX(4px);
+    }
+
+    .home-content {
+      align-self: center;
+      max-width: 760px;
+      color: white;
+      padding-left: clamp(54px, 7vw, 112px);
+      padding-right: 20vw;
+      position: relative;
+      z-index: 4;
+      transform: translateY(-2vh);
+    }
+
+    .home-kicker {
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.82);
+      margin: 0 0 14px;
+    }
+
+    .home-content h1 {
+      margin: 0;
+      font-family: 'Instrument Sans', Arial, Helvetica, sans-serif;
+      font-size: clamp(58px, 5.5vw, 94px);
+      line-height: 1.02;
+      font-weight: 400;
+      letter-spacing: -.035em;
+      white-space: nowrap;
+      text-shadow: 0 12px 40px rgba(0,0,0,.16);
+    }
+
+    .home-content h1 span {
+      white-space: nowrap;
+    }
+
+    .home-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 26px;
+    }
+
+    .home-meta span {
+      display: inline-block;
+      padding: 7px 12px;
+      border: 1px solid rgba(255,255,255,.30);
+      background: rgba(255,255,255,.12);
+      color: rgba(255,255,255,.88);
+      border-radius: 999px;
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .about-slider-wrap {
+      width: min(420px, 92vw);
+      margin-top: 34px;
+      position: relative;
+      display: grid;
+      gap: 10px;
+    }
+
+    .about-slider-box {
+      position: relative;
+      height: 46px;
+      border-radius: 999px;
+      padding: 6px;
+      background: linear-gradient(135deg, rgba(255,250,244,.62), rgba(255,255,255,.28));
+      border: 1px solid rgba(255,255,255,.50);
+      box-shadow: inset 0 1px 4px rgba(0,0,0,.12), 0 14px 34px rgba(0,0,0,.13);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      overflow: hidden;
+      --slider-progress: 0%;
+    }
+
+    .about-slider-box::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 6px;
+      bottom: 6px;
+      width: var(--slider-progress);
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(119,102,86,.56), rgba(160,135,112,.42));
+      box-shadow: inset 0 1px 2px rgba(255,255,255,.18);
+      transition: width .12s ease-out;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .about-slider-box::after {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.34), rgba(255,255,255,0));
+      transform: translateX(-85%);
+      animation: sliderGlow 3.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .about-slider-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(64,56,48,.58);
+      font-size: 14px;
+      pointer-events: none;
+      z-index: 2;
+      letter-spacing: .06em;
+      transition: color .2s ease;
+    }
+
+    .about-slider-box.active .about-slider-label {
+      color: rgba(255,250,244,.82);
+    }
+
+    .about-slider-arrow {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(64,56,48,.46);
+      font-size: 16px;
+      z-index: 2;
+      pointer-events: none;
+      animation: arrowNudge 1.8s ease-in-out infinite;
+    }
+
+    .about-slider {
+      width: 100%;
+      height: 34px;
+      appearance: none;
+      -webkit-appearance: none;
+      border-radius: 999px;
+      background: transparent;
+      outline: none;
+      cursor: grab;
+      position: relative;
+      z-index: 3;
+    }
+
+    .about-slider:active {
+      cursor: grabbing;
+    }
+
+    .about-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 36px;
+      height: 30px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #fffaf4, #eee2d6);
+      border: 1px solid rgba(90,80,70,.18);
+      box-shadow: 0 6px 16px rgba(0,0,0,.18), inset 0 1px 1px rgba(255,255,255,.75);
+    }
+
+    .about-slider::-moz-range-thumb {
+      width: 36px;
+      height: 30px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #fffaf4, #eee2d6);
+      border: 1px solid rgba(90,80,70,.18);
+      box-shadow: 0 6px 16px rgba(0,0,0,.18), inset 0 1px 1px rgba(255,255,255,.75);
+    }
+
+    @keyframes sliderGlow {
+      0%, 100% { transform: translateX(-85%); opacity: .25; }
+      50% { transform: translateX(85%); opacity: .75; }
+    }
+
+    @keyframes arrowNudge {
+      0%, 100% { transform: translateY(-50%) translateX(0); opacity: .45; }
+      50% { transform: translateY(-50%) translateX(5px); opacity: .85; }
+    }
+
+    .ambient-shapes {
+      position: absolute;
+      right: 5vw;
+      top: 12vh;
+      width: 34vw;
+      height: 72vh;
+      z-index: 3;
+      pointer-events: none;
+      opacity: .86;
+      transform: translate3d(var(--shape-x), var(--shape-y), 0);
+      transition: transform .25s ease-out;
+    }
+
+    .ambient-shape {
+      position: absolute;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.58), rgba(255,250,244,.24) 48%, rgba(255,250,244,0) 72%);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(2px);
+      animation: ambientFloat 10s ease-in-out infinite alternate;
+    }
+
+    .ambient-one {
+      width: 300px;
+      height: 300px;
+      right: 7vw;
+      top: 4vh;
+      opacity: .42;
+    }
+
+    .ambient-two {
+      width: 210px;
+      height: 210px;
+      right: 1vw;
+      top: 32vh;
+      opacity: .34;
+      animation-delay: -3s;
+    }
+
+    .ambient-three {
+      width: 145px;
+      height: 145px;
+      right: 15vw;
+      top: 48vh;
+      opacity: .30;
+      animation-delay: -6s;
+    }
+
+    @keyframes ambientFloat {
+      0% { transform: translateY(-12px) translateX(0) scale(1); }
+      50% { transform: translateY(18px) translateX(-20px) scale(1.08); }
+      100% { transform: translateY(34px) translateX(12px) scale(.96); }
+    }
+
+    #archivePage,
+    #aboutPage { display: none; }
+
+    .about-page {
+      min-height: 100vh;
+      background: #f7f3ee;
+      padding: 48px 6vw;
+    }
+
+    .about-card {
+      max-width: 920px;
+      min-height: 60vh;
+      margin: 8vh auto 0;
+      background: #fffaf4;
+      border: 1px solid #ebe2d8;
+      border-radius: 32px;
+      padding: clamp(28px, 5vw, 64px);
+      box-shadow: 0 22px 70px rgba(0,0,0,.06);
+    }
+
+    .about-card h1 {
+      margin: 0;
+      font-size: clamp(38px, 6vw, 76px);
+      line-height: .98;
+      font-weight: 400;
+      letter-spacing: -.05em;
+    }
+
+    .about-card p {
+      margin-top: 22px;
+      color: #7d7166;
+      line-height: 1.9;
+      font-size: 16px;
+      max-width: 620px;
+    }
+
+    .back-home-bar {
+      padding: 18px 6vw 0;
+      background: #f7f3ee;
+    }
+
+    .back-home-btn {
+      border: 1px solid #d8cec3;
+      background: #fffaf4;
+      color: #423b35;
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    /* Archive page */
+    header {
+      padding: 48px 6vw 36px;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-end;
+      border-bottom: 1px solid #e7ded4;
+      background: #f7f3ee;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 68px);
+      font-weight: 400;
+      letter-spacing: -.04em;
+    }
+
+    .brand p {
+      margin: 14px 0 0;
+      max-width: 560px;
+      color: #796e64;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    nav button {
+      border: 1px solid #d8cec3;
+      background: transparent;
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #423b35;
+    }
+
+    nav button.active {
+      background: #2f2a25;
+      color: white;
+      border-color: #2f2a25;
+    }
+
+    main { padding: 42px 6vw 80px; }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+      gap: 20px;
+    }
+
+    .section-title h2 {
+      font-size: 24px;
+      font-weight: 400;
+      margin: 0;
+    }
+
+    .section-title span {
+      color: #8a7d70;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      background: #fffaf4;
+      border-radius: 28px;
+      overflow: hidden;
+      border: 1px solid #ebe2d8;
+      box-shadow: 0 10px 30px rgba(0,0,0,.035);
+    }
+
+    .image-box {
+      height: 430px;
+      background: #f7f3ee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9a8c7e;
+      font-size: 14px;
+      text-align: center;
+      padding: 18px;
+    }
+
+    .image-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      border-radius: 18px;
+      background: #f7f3ee;
+    }
+
+    .thumb-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 0 18px 18px;
+      background: #fffaf4;
+    }
+
+    .thumb-row img {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      border-radius: 12px;
+      background: #f7f3ee;
+      border: 1px solid #eee5dc;
+      padding: 4px;
+      flex: 0 0 auto;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .thumb-row img:hover { transform: translateY(-2px); border-color: #c6b6a7; }
+    .thumb-row img.active-thumb { border-color: #2f2a25; box-shadow: 0 0 0 2px rgba(47,42,37,.08); }
+
+    .card-content { padding: 22px; }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eee3d7;
+      font-size: 12px;
+      color: #6c5e51;
+      margin-bottom: 14px;
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 21px;
+      font-weight: 400;
+    }
+
+    .info {
+      display: grid;
+      gap: 8px;
+      color: #766a60;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #eee5dc;
+      color: #4f4740;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .card-actions { display: flex; gap: 10px; margin-top: 18px; }
+
+    .card-actions button {
+      flex: 1;
+      border: 1px solid #d8cec3;
+      background: #fffaf4;
+      color: #3a332d;
+      padding: 10px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .card-actions button.delete { color: #a8483b; border-color: #e3c1b9; }
+
+    .admin-panel {
+      margin-top: 56px;
+      background: #fffaf4;
+      border: 1px solid #ebe2d8;
+      border-radius: 28px;
+      padding: 28px;
+    }
+
+    .admin-panel h2 { margin: 0 0 10px; font-size: 24px; font-weight: 400; }
+    .admin-panel p { margin: 0 0 24px; color: #7d7166; line-height: 1.7; font-size: 14px; }
+
+    .admin-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .admin-form label { display: grid; gap: 8px; color: #5c534b; font-size: 14px; }
+
+    .admin-form input,
+    .admin-form select,
+    .admin-form textarea {
+      width: 100%;
+      border: 1px solid #ddd2c6;
+      border-radius: 16px;
+      padding: 13px 14px;
+      background: white;
+      font: inherit;
+      outline: none;
+    }
+
+    .admin-form textarea,
+    .admin-form .full { grid-column: 1 / -1; }
+
+    .form-buttons { display: flex; gap: 12px; }
+    .form-buttons button { flex: 1; }
+    .secondary-button { background: #e9ddd1 !important; color: #3a332d !important; }
+
+    .hint {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: #f2e8dd;
+      border-radius: 18px;
+      color: #74685f;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .status { margin-top: 14px; color: #6f6258; font-size: 14px; min-height: 22px; }
+
+    @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    @media (max-width: 900px) {
+      .home-layout { grid-template-columns: 1fr; }
+      .home-sidebar { min-height: auto; padding: 28px; }
+      .home-content { padding: 38px 28px 120px; }
+      .ambient-shapes { opacity: .34; width: 55vw; }
+      .home-content h1 { font-size: 48px; }
+      header { display: block; }
+      nav { justify-content: flex-start; margin-top: 24px; }
+      .admin-form { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+      .image-box { height: 360px; }
+      .form-buttons { flex-direction: column; }
+      .home-content h1 { font-size: 40px; }
+      .about-slider-wrap { width: 100%; }
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-  <div id="gallery"></div>
-</div>
-<script>
-const products = [
-  {
-    id:1,
-    title:'Two-drawer cabinet',
-    images:['/images/cabinet-2d-1.png','/images/cabinet-2d-2.png'],
-    description:'简单条纹粗把手，油漆表面处理，MDF板材',
-    size:'400*400*400mm',
-    material:'MDF',
-    client:'DE',
-    recommendedFor:'中产阶级家庭'
-  },
-  {
-    id:2,
-    title:'Three-drawer cabinet',
-    images:['/images/cabinet-3d-1.png','/images/cabinet-3d-2.png'],
-    description:'三抽设计，简洁现代',
-    size:'400*400*600mm',
-    material:'MDF',
-    client:'DE',
-    recommendedFor:'中产阶级家庭'
-  }
-];
-
-let selectedProduct = products[0];
-let selectedImage = selectedProduct.images[0];
-
-function renderGallery(){
-  const container = document.getElementById('gallery');
-  container.innerHTML = `
-    <div><img src='${selectedImage}' id='mainImage' /></div>
-    <div style='display:flex; gap:8px; margin-top:12px;'>
-      ${selectedProduct.images.map(img=>`<img src='${img}' class='thumbnail ${img===selectedImage?'active':''}' onclick='selectImage("${img}")'/>`).join('')}
+  <div class="password-screen" id="passwordScreen">
+    <div class="password-card">
+      <h1>Zhuzi Design Archive</h1>
+      <p>Private furniture concept archive. Please enter password to view.</p>
+      <input id="passwordInput" type="password" placeholder="请输入访问密码" />
+      <button onclick="checkPassword()">Enter</button>
+      <div class="password-error" id="passwordError"></div>
     </div>
-    <div class='product-info' id='productInfo'>
-      <h2>${selectedProduct.title}</h2>
-      <p>${selectedProduct.description}</p>
-      <p><strong>Size:</strong> ${selectedProduct.size}</p>
-      <p><strong>Material:</strong> ${selectedProduct.material}</p>
-      <p><strong>Client:</strong> ${selectedProduct.client}</p>
-      <p><strong>Recommended for:</strong> ${selectedProduct.recommendedFor}</p>
+  </div>
+
+  <section class="home-screen" id="homeScreen">
+    <div class="home-bg"></div>
+    <div class="home-overlay"></div>
+
+    <div class="ambient-shapes">
+      <div class="ambient-shape ambient-one"></div>
+      <div class="ambient-shape ambient-two"></div>
+      <div class="ambient-shape ambient-three"></div>
     </div>
-    <div class='series-buttons'>
-      ${products.map(p=>`<button class='${p.id===selectedProduct.id?'active':''}' onclick='selectProduct(${p.id})'>${p.title}</button>`).join('')}
+
+    <div class="home-layout">
+      <aside class="home-sidebar">
+        <div class="home-brand-small">Zhuzi Design<br />Archive</div>
+        <div class="home-nav-title">Product Categories</div>
+
+        <button class="home-nav-btn" onclick="enterArchive('All')">All Projects</button>
+        <button class="home-nav-btn" onclick="enterArchive('Cabinet')">Cabinet</button>
+        <button class="home-nav-btn" onclick="enterArchive('Side Table')">Side Table</button>
+        <button class="home-nav-btn" onclick="enterArchive('Armchair')">Armchair</button>
+        <button class="home-nav-btn" onclick="enterArchive('Ottoman')">Ottoman</button>
+      </aside>
+
+      <div class="home-content">
+        <p class="home-kicker">Private Design Portfolio</p>
+        <h1><span>Furniture Concepts</span><br /><span>for European</span><br /><span>Retailers</span></h1>
+
+        <div class="about-slider-wrap">
+          <div class="about-slider-box">
+            <div class="about-slider-label">滑动了解设计师</div>
+            <div class="about-slider-arrow">→</div>
+            <input class="about-slider" id="aboutSlider" type="range" min="0" max="100" value="0" oninput="handleAboutSlider(this)" />
+          </div>
+        </div>
+      </div>
     </div>
-  `;
-}
+  </section>
 
-function selectImage(img){
-  selectedImage = img;
-  renderGallery();
-}
+  <section class="about-page" id="aboutPage">
+    <button class="back-home-btn" onclick="goHome()">← Back to Home</button>
+    <div class="about-card">
+      <p class="home-kicker" style="color:#9a8d80;">About Designer</p>
+      <h1>About Zhuzi</h1>
+      <p>
+        这里是个人介绍页面的预留位置。之后可以放你的设计经历、负责品类、客户经验、产品开发方法、作品理念以及联系方式。
+      </p>
+    </div>
+  </section>
 
-function selectProduct(id){
-  selectedProduct = products.find(p=>p.id===id);
-  selectedImage = selectedProduct.images[0];
-  renderGallery();
-}
+  <div id="archivePage">
+    <div class="back-home-bar">
+      <button class="back-home-btn" onclick="goHome()">← Back to Home</button>
+    </div>
 
-renderGallery();
-</script>
+    <header>
+      <div class="brand">
+        <h1>Zhuzi Design Archive</h1>
+        <p>个人家具设计稿资料库，用于整理柜子、边几茶几、单人沙发、脚凳等产品概念，适合欧洲客户开发提案。</p>
+      </div>
+      <nav>
+        <button class="active" onclick="filterProjects('All', this)">All</button>
+        <button onclick="filterProjects('Cabinet', this)">Cabinet</button>
+        <button onclick="filterProjects('Side Table', this)">Side Table</button>
+        <button onclick="filterProjects('Armchair', this)">Armchair</button>
+        <button onclick="filterProjects('Ottoman', this)">Ottoman</button>
+      </nav>
+    </header>
+
+    <main>
+      <div class="section-title">
+        <h2>Design Projects</h2>
+        <span>Private portfolio / product development archive</span>
+      </div>
+
+      <section class="grid" id="projectGrid"></section>
+
+      <section class="admin-panel" id="uploadPanel">
+        <h2 id="formTitle">Upload Draft Area</h2>
+        <p id="formDescription">可以一次上传多张图片。第一张会作为卡片主图，其余图片会作为同系列缩略图，点击缩略图可切换大图。</p>
+
+        <form class="admin-form" onsubmit="saveProject(event)">
+          <input id="editingId" type="hidden" />
+          <input id="existingImageUrl" type="hidden" />
+          <input id="existingGalleryUrls" type="hidden" />
+
+          <label class="full">
+            产品图片 / 系列图片（可多选）
+            <input id="imageFile" type="file" accept="image/*" multiple />
+          </label>
+          <label class="full">
+            封面图编号
+            <input id="coverIndex" type="number" min="1" value="1" placeholder="例如：1 表示第 1 张作为封面，2 表示第 2 张作为封面" />
+          </label>
+          <label>
+            产品名称
+            <input id="title" placeholder="例如：Arched Bedside Table Series" required />
+          </label>
+          <label>
+            分类
+            <select id="category">
+              <option>Cabinet</option>
+              <option>Side Table</option>
+              <option>Armchair</option>
+              <option>Ottoman</option>
+            </select>
+          </label>
+          <label>
+            尺寸
+            <input id="size" placeholder="例如：450 × 380 × 580 mm" />
+          </label>
+          <label>
+            材质
+            <input id="material" placeholder="例如：Painted MDF + oak veneer" />
+          </label>
+          <label>
+            推荐客户
+            <input id="client" placeholder="例如：JJA / DE / moemax / XXXLUTZ" />
+          </label>
+          <label class="full">
+            设计说明
+            <textarea id="description" rows="4" placeholder="简单说明产品风格、卖点和适合场景"></textarea>
+          </label>
+          <div class="full form-buttons">
+            <button id="saveButton" type="submit">上传并保存作品</button>
+            <button class="secondary-button" type="button" onclick="resetForm()">取消编辑 / 清空</button>
+          </div>
+          <div class="full status" id="statusMessage"></div>
+        </form>
+
+        <div class="hint">
+          当前版本：支持密码访问、主界面、分类进入、图片完整显示、多图缩略图切换、封面图编号、上传、编辑、删除作品卡片。
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const SITE_PASSWORD = "zhaoqing333";
+    const VIEWER_PASSWORD = "888888";
+    const SUPABASE_URL = "https://qnzizwadygywroqxuszt.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_0R2DZniqqB2ueWAraBHNtA_FtotsnUs";
+
+    let supabaseClient = null;
+    let projects = [];
+    let currentCategory = "All";
+    let currentUserRole = "viewer";
+    let aboutSliderTimer = null;
+    let parallaxReady = false;
+
+    function checkPassword() {
+      const input = document.getElementById("passwordInput").value;
+      const error = document.getElementById("passwordError");
+
+      if (input === SITE_PASSWORD) {
+        currentUserRole = "admin";
+        document.getElementById("passwordScreen").style.display = "none";
+        document.getElementById("homeScreen").style.display = "block";
+        loadProjects();
+        setupParallax();
+      } else if (input === VIEWER_PASSWORD) {
+        currentUserRole = "viewer";
+        document.getElementById("passwordScreen").style.display = "none";
+        document.getElementById("homeScreen").style.display = "block";
+        loadProjects();
+        setupParallax();
+      } else {
+        error.textContent = "密码不正确，请重新输入。";
+      }
+    }
+
+    function setupParallax() {
+      if (parallaxReady) return;
+      parallaxReady = true;
+
+      const home = document.getElementById("homeScreen");
+      if (!home) return;
+
+      window.addEventListener("mousemove", (event) => {
+        if (home.style.display === "none") return;
+
+        const x = (event.clientX / window.innerWidth - 0.5);
+        const y = (event.clientY / window.innerHeight - 0.5);
+
+        home.style.setProperty("--bg-x", `${x * -18}px`);
+        home.style.setProperty("--bg-y", `${y * -12}px`);
+        home.style.setProperty("--shape-x", `${x * 34}px`);
+        home.style.setProperty("--shape-y", `${y * 24}px`);
+      });
+    }
+
+    function getClient() {
+      if (!supabaseClient) {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+      return supabaseClient;
+    }
+
+    function updateSliderVisual(slider) {
+      const box = slider.closest(".about-slider-box");
+      if (!box) return;
+      const value = Number(slider.value || 0);
+      box.style.setProperty("--slider-progress", `${value}%`);
+      box.classList.toggle("active", value > 8);
+    }
+
+    function resetAboutSlider(slider) {
+      slider.value = 0;
+      updateSliderVisual(slider);
+    }
+
+    function handleAboutSlider(slider) {
+      clearTimeout(aboutSliderTimer);
+      updateSliderVisual(slider);
+
+      if (Number(slider.value) >= 88) {
+        slider.value = 100;
+        updateSliderVisual(slider);
+        setTimeout(() => showAboutPage(), 180);
+      } else {
+        aboutSliderTimer = setTimeout(() => {
+          resetAboutSlider(slider);
+        }, 900);
+      }
+    }
+
+    function showAboutPage() {
+      document.getElementById("homeScreen").style.display = "none";
+      document.getElementById("archivePage").style.display = "none";
+      document.getElementById("aboutPage").style.display = "block";
+      const slider = document.getElementById("aboutSlider");
+      if (slider) resetAboutSlider(slider);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function enterArchive(category = "All") {
+      document.getElementById("homeScreen").style.display = "none";
+      document.getElementById("aboutPage").style.display = "none";
+      document.getElementById("archivePage").style.display = "block";
+
+      const uploadPanel = document.getElementById("uploadPanel");
+      if (uploadPanel) uploadPanel.style.display = currentUserRole === "admin" ? "block" : "none";
+
+      currentCategory = category;
+      renderProjects();
+
+      const navButtons = document.querySelectorAll("nav button");
+      navButtons.forEach(btn => btn.classList.remove("active"));
+
+      const map = { "All": 0, "Cabinet": 1, "Side Table": 2, "Armchair": 3, "Ottoman": 4 };
+      if (navButtons[map[category]]) navButtons[map[category]].classList.add("active");
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function goHome() {
+      document.getElementById("archivePage").style.display = "none";
+      document.getElementById("aboutPage").style.display = "none";
+      document.getElementById("homeScreen").style.display = "block";
+      const slider = document.getElementById("aboutSlider");
+      if (slider) resetAboutSlider(slider);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function getImages(project) {
+      const images = [];
+      if (project.image_url) images.push(project.image_url);
+      if (Array.isArray(project.gallery_urls)) {
+        project.gallery_urls.forEach(url => {
+          if (url && !images.includes(url)) images.push(url);
+        });
+      }
+      return images;
+    }
+
+    async function loadProjects() {
+      const client = getClient();
+      const grid = document.getElementById("projectGrid");
+      if (grid) grid.innerHTML = "正在读取作品...";
+
+      const { data, error } = await client
+        .from("projects")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        if (grid) grid.innerHTML = "读取失败，请检查 Supabase 表名、字段名和 RLS 设置。";
+        console.error(error);
+        return;
+      }
+
+      projects = data || [];
+      renderProjects();
+    }
+
+    function renderProjects() {
+      const grid = document.getElementById("projectGrid");
+      if (!grid) return;
+
+      const list = currentCategory === "All" ? projects : projects.filter(project => project.category === currentCategory);
+
+      if (!list.length) {
+        grid.innerHTML = "<p style='color:#8a7d70;'>暂无作品。你可以在下方上传第一张设计稿。</p>";
+        return;
+      }
+
+      grid.innerHTML = list.map(project => {
+        const images = getImages(project);
+        const mainImage = images[0] || "";
+        const projectId = String(project.id).replace(/'/g, "\'");
+
+        return `
+          <article class="card" id="card-${projectId}">
+            <div class="image-box">
+              ${mainImage ? `<img id="main-image-${projectId}" src="${mainImage}" alt="${project.title || 'design project'}" />` : "Image Placeholder<br/>暂无图片"}
+            </div>
+            ${images.length ? `<div class="thumb-row">${images.map((url, index) => `<img class="${index === 0 ? 'active-thumb' : ''}" src="${url}" alt="series image" onclick="showMainImage('${projectId}', '${url}', this)" />`).join("")}</div>` : ""}
+            <div class="card-content">
+              <span class="tag">${project.category || "Uncategorized"}</span>
+              <h3>${project.title || "Untitled"}</h3>
+              <div class="info">
+                <div><strong>Size:</strong> ${project.size || "-"}</div>
+                <div><strong>Material:</strong> ${project.material || "-"}</div>
+                <div><strong>Client:</strong> ${project.client || "-"}</div>
+              </div>
+              <div class="note">${project.description || "暂无说明"}</div>
+              ${currentUserRole === "admin" ? `
+                <div class="card-actions">
+                  <button onclick="editProject('${projectId}')">编辑</button>
+                  <button class="delete" onclick="deleteProject('${projectId}')">删除</button>
+                </div>
+              ` : ""}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function showMainImage(projectId, imageUrl, thumbElement) {
+      const mainImage = document.getElementById(`main-image-${projectId}`);
+      if (mainImage) mainImage.src = imageUrl;
+
+      const card = document.getElementById(`card-${projectId}`);
+      if (!card) return;
+      card.querySelectorAll(".thumb-row img").forEach(img => img.classList.remove("active-thumb"));
+      if (thumbElement) thumbElement.classList.add("active-thumb");
+    }
+
+    function filterProjects(category, button) {
+      currentCategory = category;
+      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+      renderProjects();
+    }
+
+    async function uploadImages(files) {
+      const client = getClient();
+      const uploadedUrls = [];
+      const fileList = Array.from(files || []);
+
+      for (const file of fileList) {
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+        const filePath = `projects/${fileName}`;
+
+        const { error: uploadError } = await client.storage.from("design-images").upload(filePath, file);
+        if (uploadError) throw uploadError;
+
+        const { data } = client.storage.from("design-images").getPublicUrl(filePath);
+        uploadedUrls.push(data.publicUrl);
+      }
+
+      return uploadedUrls;
+    }
+
+    async function saveProject(event) {
+      event.preventDefault();
+      const client = getClient();
+      const status = document.getElementById("statusMessage");
+      const editingId = document.getElementById("editingId").value;
+      const existingImageUrl = document.getElementById("existingImageUrl").value;
+      const existingGalleryUrls = JSON.parse(document.getElementById("existingGalleryUrls").value || "[]");
+
+      status.textContent = editingId ? "正在更新，请稍等..." : "正在上传，请稍等...";
+
+      try {
+        const files = document.getElementById("imageFile").files;
+        const uploadedUrls = files && files.length ? await uploadImages(files) : [];
+        let finalImages = uploadedUrls.length ? uploadedUrls : [existingImageUrl, ...existingGalleryUrls].filter(Boolean);
+
+        const coverIndexInput = Number(document.getElementById("coverIndex").value || 1);
+        const coverIndex = Math.max(0, Math.min(finalImages.length - 1, coverIndexInput - 1));
+        if (finalImages.length > 1 && coverIndex > 0) {
+          const coverImage = finalImages.splice(coverIndex, 1)[0];
+          finalImages.unshift(coverImage);
+        }
+
+        const projectData = {
+          title: document.getElementById("title").value,
+          category: document.getElementById("category").value,
+          size: document.getElementById("size").value,
+          material: document.getElementById("material").value,
+          client: document.getElementById("client").value,
+          description: document.getElementById("description").value,
+          image_url: finalImages[0] || "",
+          gallery_urls: finalImages.slice(1)
+        };
+
+        let error;
+        if (editingId) {
+          const result = await client.from("projects").update(projectData).eq("id", editingId);
+          error = result.error;
+        } else {
+          const result = await client.from("projects").insert([projectData]);
+          error = result.error;
+        }
+
+        if (error) throw error;
+
+        status.textContent = editingId ? "更新成功！" : "保存成功！作品已经显示在上方。";
+        resetForm();
+        await loadProjects();
+      } catch (error) {
+        status.textContent = "保存失败：" + error.message;
+        console.error(error);
+      }
+    }
+
+    function editProject(id) {
+      const project = projects.find(item => String(item.id) === String(id));
+      if (!project) return;
+
+      document.getElementById("editingId").value = project.id;
+      document.getElementById("existingImageUrl").value = project.image_url || "";
+      document.getElementById("existingGalleryUrls").value = JSON.stringify(project.gallery_urls || []);
+      document.getElementById("title").value = project.title || "";
+      document.getElementById("category").value = project.category || "Cabinet";
+      document.getElementById("size").value = project.size || "";
+      document.getElementById("material").value = project.material || "";
+      document.getElementById("client").value = project.client || "";
+      document.getElementById("description").value = project.description || "";
+      document.getElementById("imageFile").value = "";
+      document.getElementById("coverIndex").value = "1";
+
+      document.getElementById("formTitle").textContent = "Edit Design Project";
+      document.getElementById("formDescription").textContent = "正在编辑作品。若不重新选择图片，将保留原图片组；封面图编号可调整当前图片组的封面；若重新选择多张图片，将替换为新图片组。";
+      document.getElementById("saveButton").textContent = "保存修改";
+      document.getElementById("statusMessage").textContent = "";
+      document.getElementById("uploadPanel").scrollIntoView({ behavior: "smooth" });
+    }
+
+    async function deleteProject(id) {
+      const confirmed = confirm("确定要删除这个作品吗？删除后不会在网站上显示。");
+      if (!confirmed) return;
+
+      const client = getClient();
+      const { error } = await client.from("projects").delete().eq("id", id);
+
+      if (error) {
+        alert("删除失败：" + error.message);
+        console.error(error);
+        return;
+      }
+
+      alert("已删除。");
+      await loadProjects();
+    }
+
+    function resetForm() {
+      document.querySelector(".admin-form").reset();
+      document.getElementById("editingId").value = "";
+      document.getElementById("existingImageUrl").value = "";
+      document.getElementById("existingGalleryUrls").value = "";
+      document.getElementById("coverIndex").value = "1";
+      document.getElementById("formTitle").textContent = "Upload Draft Area";
+      document.getElementById("formDescription").textContent = "可以一次上传多张图片。第一张会作为卡片主图，其余图片会作为同系列缩略图，点击缩略图可切换大图。";
+      document.getElementById("saveButton").textContent = "上传并保存作品";
+      document.getElementById("statusMessage").textContent = "";
+    }
+  </script>
 </body>
 </html>
