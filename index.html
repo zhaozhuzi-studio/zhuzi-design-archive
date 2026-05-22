@@ -230,36 +230,33 @@
       gap: 10px;
     }
 
-    .about-slider-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: rgba(255,255,255,.88);
-      font-size: 13px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      text-shadow: 0 6px 22px rgba(0,0,0,.16);
-    }
-
-    .about-slider-title::before {
-      content: "";
-      width: 28px;
-      height: 1px;
-      background: rgba(255,255,255,.58);
-      display: inline-block;
-    }
-
     .about-slider-box {
       position: relative;
       height: 46px;
       border-radius: 999px;
       padding: 6px;
-      background: linear-gradient(135deg, rgba(255,250,244,.66), rgba(255,255,255,.28));
+      background: linear-gradient(135deg, rgba(255,250,244,.62), rgba(255,255,255,.28));
       border: 1px solid rgba(255,255,255,.50);
       box-shadow: inset 0 1px 4px rgba(0,0,0,.12), 0 14px 34px rgba(0,0,0,.13);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       overflow: hidden;
+      --slider-progress: 0%;
+    }
+
+    .about-slider-box::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 6px;
+      bottom: 6px;
+      width: var(--slider-progress);
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(119,102,86,.56), rgba(160,135,112,.42));
+      box-shadow: inset 0 1px 2px rgba(255,255,255,.18);
+      transition: width .12s ease-out;
+      pointer-events: none;
+      z-index: 1;
     }
 
     .about-slider-box::after {
@@ -284,6 +281,11 @@
       pointer-events: none;
       z-index: 2;
       letter-spacing: .06em;
+      transition: color .2s ease;
+    }
+
+    .about-slider-box.active .about-slider-label {
+      color: rgba(255,250,244,.82);
     }
 
     .about-slider-arrow {
@@ -333,13 +335,6 @@
       background: linear-gradient(135deg, #fffaf4, #eee2d6);
       border: 1px solid rgba(90,80,70,.18);
       box-shadow: 0 6px 16px rgba(0,0,0,.18), inset 0 1px 1px rgba(255,255,255,.75);
-    }
-
-    .about-slider-hint {
-      margin: 0;
-      color: rgba(255,255,255,.66);
-      font-size: 12px;
-      letter-spacing: .04em;
     }
 
     @keyframes sliderGlow {
@@ -744,13 +739,11 @@
         <h1><span>Furniture Concepts</span><br /><span>for European</span><br /><span>Retailers</span></h1>
 
         <div class="about-slider-wrap">
-          <div class="about-slider-title">Slide to discover</div>
           <div class="about-slider-box">
             <div class="about-slider-label">滑动了解设计师</div>
             <div class="about-slider-arrow">→</div>
             <input class="about-slider" id="aboutSlider" type="range" min="0" max="100" value="0" oninput="handleAboutSlider(this)" />
           </div>
-          <p class="about-slider-hint">Drag the handle to enter the designer profile.</p>
         </div>
       </div>
     </div>
@@ -856,7 +849,7 @@
 
   <script>
     const SITE_PASSWORD = "zhaoqing333";
-    const VIEWER_PASSWORD = "888888";
+    const VIEWER_PASSWORD = "你的访客密码";
     const SUPABASE_URL = "https://qnzizwadygywroqxuszt.supabase.co";
     const SUPABASE_KEY = "sb_publishable_0R2DZniqqB2ueWAraBHNtA_FtotsnUs";
 
@@ -915,15 +908,31 @@
       return supabaseClient;
     }
 
+    function updateSliderVisual(slider) {
+      const box = slider.closest(".about-slider-box");
+      if (!box) return;
+      const value = Number(slider.value || 0);
+      box.style.setProperty("--slider-progress", `${value}%`);
+      box.classList.toggle("active", value > 8);
+    }
+
+    function resetAboutSlider(slider) {
+      slider.value = 0;
+      updateSliderVisual(slider);
+    }
+
     function handleAboutSlider(slider) {
       clearTimeout(aboutSliderTimer);
+      updateSliderVisual(slider);
+
       if (Number(slider.value) >= 88) {
         slider.value = 100;
+        updateSliderVisual(slider);
         setTimeout(() => showAboutPage(), 180);
       } else {
         aboutSliderTimer = setTimeout(() => {
-          slider.value = 0;
-        }, 700);
+          resetAboutSlider(slider);
+        }, 900);
       }
     }
 
@@ -932,7 +941,7 @@
       document.getElementById("archivePage").style.display = "none";
       document.getElementById("aboutPage").style.display = "block";
       const slider = document.getElementById("aboutSlider");
-      if (slider) slider.value = 0;
+      if (slider) resetAboutSlider(slider);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -961,7 +970,7 @@
       document.getElementById("aboutPage").style.display = "none";
       document.getElementById("homeScreen").style.display = "block";
       const slider = document.getElementById("aboutSlider");
-      if (slider) slider.value = 0;
+      if (slider) resetAboutSlider(slider);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
