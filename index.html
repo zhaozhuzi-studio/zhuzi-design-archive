@@ -164,12 +164,13 @@
 
     .home-content {
       align-self: center;
-      max-width: 860px;
+      max-width: 760px;
       color: white;
-      padding-left: clamp(24px, 8vw, 120px);
-      padding-right: 18vw;
+      padding-left: clamp(54px, 7vw, 112px);
+      padding-right: 20vw;
       position: relative;
       z-index: 4;
+      transform: translateY(-2vh);
     }
 
     .home-kicker {
@@ -180,7 +181,14 @@
       margin: 0 0 14px;
     }
 
-    .home-content h1 {$1
+    .home-content h1 {
+      margin: 0;
+      font-size: clamp(72px, 6.8vw, 118px);
+      line-height: .96;
+      font-weight: 500;
+      letter-spacing: -.06em;
+      white-space: nowrap;
+      text-shadow: 0 12px 40px rgba(0,0,0,.16);
     }
 
     .home-content h1 span {
@@ -206,8 +214,8 @@
     }
 
     .about-slider-wrap {
-      width: min(340px, 92vw);
-      margin-top: 26px;
+      width: min(370px, 92vw);
+      margin-top: 32px;
       position: relative;
     }
 
@@ -262,54 +270,69 @@
 
     .silk-waves {
       position: absolute;
-      right: -2vw;
+      right: -1vw;
       top: 0;
-      width: 32vw;
+      width: 34vw;
       height: 100vh;
       z-index: 3;
       pointer-events: none;
       overflow: hidden;
-      opacity: .9;
+      opacity: .95;
     }
 
-    .wave-ribbon {
+    .fabric-layer {
       position: absolute;
-      inset: -8vh -4vw -8vh auto;
-      width: 34vw;
-      height: 116vh;
-      filter: drop-shadow(0 28px 46px rgba(0,0,0,.10));
+      top: -10vh;
+      height: 120vh;
+      width: 42%;
+      opacity: .72;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      background: linear-gradient(90deg, rgba(255,255,255,.10), rgba(255,250,244,.58), rgba(210,196,178,.16));
+      box-shadow: inset 28px 0 46px rgba(255,255,255,.18), inset -18px 0 38px rgba(115,96,78,.10), 0 20px 55px rgba(0,0,0,.08);
+      border-left: 1px solid rgba(255,255,255,.20);
+      border-right: 1px solid rgba(110,95,80,.08);
+      animation: fabricWave 8.8s ease-in-out infinite alternate;
+      transform-origin: 50% 50%;
     }
 
-    .wave-path {
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      animation: waveFloat 9s ease-in-out infinite alternate;
+    .fabric-one {
+      right: 260px;
+      clip-path: polygon(52% 0%, 78% 8%, 66% 18%, 36% 30%, 24% 45%, 47% 58%, 77% 72%, 62% 86%, 31% 100%, 0% 100%, 22% 83%, 38% 70%, 18% 57%, 4% 43%, 24% 27%, 46% 14%);
+      animation-delay: 0s;
+      opacity: .58;
     }
 
-    .wave-one {
-      stroke: rgba(255,250,244,.62);
-      stroke-width: 72;
-      filter: blur(.2px);
+    .fabric-two {
+      right: 138px;
+      width: 48%;
+      clip-path: polygon(37% 0%, 66% 10%, 82% 23%, 61% 38%, 35% 50%, 23% 66%, 44% 80%, 72% 91%, 59% 100%, 6% 100%, 27% 87%, 15% 72%, 0% 58%, 16% 44%, 44% 31%, 55% 17%);
+      animation-delay: -2.6s;
+      opacity: .68;
+      background: linear-gradient(90deg, rgba(255,255,255,.08), rgba(255,250,244,.66), rgba(183,165,146,.18));
     }
 
-    .wave-two {
-      stroke: rgba(255,255,255,.34);
-      stroke-width: 118;
-      animation-delay: -2s;
-      mix-blend-mode: screen;
+    .fabric-three {
+      right: 24px;
+      width: 46%;
+      clip-path: polygon(48% 0%, 94% 0%, 82% 15%, 60% 29%, 72% 44%, 96% 58%, 78% 72%, 48% 87%, 34% 100%, 0% 100%, 20% 84%, 37% 71%, 25% 56%, 3% 42%, 20% 28%, 53% 14%);
+      animation-delay: -5s;
+      opacity: .50;
     }
 
-    .wave-three {
-      stroke: rgba(176,158,138,.22);
-      stroke-width: 44;
-      animation-delay: -4s;
+    .fabric-four {
+      right: -82px;
+      width: 50%;
+      clip-path: polygon(26% 0%, 100% 0%, 84% 16%, 56% 32%, 68% 46%, 96% 61%, 78% 79%, 48% 91%, 38% 100%, 0% 100%, 12% 86%, 30% 72%, 18% 58%, 0% 44%, 18% 27%, 42% 13%);
+      animation-delay: -1.4s;
+      opacity: .42;
+      background: linear-gradient(90deg, rgba(255,250,244,.06), rgba(255,255,255,.46), rgba(160,140,120,.14));
     }
 
-    @keyframes waveFloat {
-      0% { transform: translateX(0) translateY(-16px) scaleX(1); }
-      50% { transform: translateX(-26px) translateY(8px) scaleX(1.05); }
-      100% { transform: translateX(14px) translateY(28px) scaleX(.98); }
+    @keyframes fabricWave {
+      0% { transform: translateY(-26px) translateX(0) skewX(-3deg) scaleX(.98); }
+      45% { transform: translateY(18px) translateX(-18px) skewX(4deg) scaleX(1.04); }
+      100% { transform: translateY(38px) translateX(10px) skewX(-2deg) scaleX(1); }
     }
 
     #archivePage,
@@ -628,11 +651,10 @@
     <div class="home-overlay"></div>
 
     <div class="silk-waves">
-      <svg class="wave-ribbon" viewBox="0 0 420 1000" preserveAspectRatio="none" aria-hidden="true">
-        <path class="wave-path wave-two" d="M285 -60 C130 120 395 230 245 395 C110 545 380 650 220 840 C145 930 210 1025 250 1070" />
-        <path class="wave-path wave-one" d="M315 -80 C170 105 350 215 235 360 C90 540 365 650 210 820 C120 920 180 1015 235 1080" />
-        <path class="wave-path wave-three" d="M245 -80 C390 95 130 235 270 405 C405 560 130 690 295 855 C365 930 305 1020 260 1080" />
-      </svg>
+      <div class="fabric-layer fabric-one"></div>
+      <div class="fabric-layer fabric-two"></div>
+      <div class="fabric-layer fabric-three"></div>
+      <div class="fabric-layer fabric-four"></div>
     </div>
 
     <div class="home-layout">
