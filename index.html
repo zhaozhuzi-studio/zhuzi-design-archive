@@ -5,12 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Zhuzi Design Archive</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: 'Instrument Sans', Arial, Helvetica, sans-serif;
       background: #f7f3ee;
       color: #26221f;
     }
@@ -87,6 +90,10 @@
       min-height: 100vh;
       overflow: hidden;
       display: none;
+      --bg-x: 0px;
+      --bg-y: 0px;
+      --shape-x: 0px;
+      --shape-y: 0px;
     }
 
     .home-bg {
@@ -96,7 +103,8 @@
       background-size: cover;
       background-position: center bottom;
       filter: blur(10px);
-      transform: scale(1.08);
+      transform: translate3d(var(--bg-x), var(--bg-y), 0) scale(1.1);
+      transition: transform .35s ease-out;
     }
 
     .home-overlay {
@@ -183,10 +191,11 @@
 
     .home-content h1 {
       margin: 0;
-      font-size: clamp(60px, 5.7vw, 96px);
-      line-height: .96;
-      font-weight: 500;
-      letter-spacing: -.06em;
+      font-family: 'Instrument Sans', Arial, Helvetica, sans-serif;
+      font-size: clamp(58px, 5.5vw, 94px);
+      line-height: 1.02;
+      font-weight: 400;
+      letter-spacing: -.035em;
       white-space: nowrap;
       text-shadow: 0 12px 40px rgba(0,0,0,.16);
     }
@@ -276,41 +285,43 @@
       height: 72vh;
       z-index: 3;
       pointer-events: none;
-      opacity: .72;
+      opacity: .86;
+      transform: translate3d(var(--shape-x), var(--shape-y), 0);
+      transition: transform .25s ease-out;
     }
 
     .ambient-shape {
       position: absolute;
       border-radius: 999px;
-      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.42), rgba(255,250,244,.16) 48%, rgba(255,250,244,0) 72%);
+      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.58), rgba(255,250,244,.24) 48%, rgba(255,250,244,0) 72%);
       border: 1px solid rgba(255,255,255,.18);
       backdrop-filter: blur(2px);
       animation: ambientFloat 10s ease-in-out infinite alternate;
     }
 
     .ambient-one {
-      width: 260px;
-      height: 260px;
+      width: 300px;
+      height: 300px;
       right: 7vw;
       top: 4vh;
-      opacity: .32;
+      opacity: .42;
     }
 
     .ambient-two {
-      width: 180px;
-      height: 180px;
+      width: 210px;
+      height: 210px;
       right: 1vw;
       top: 32vh;
-      opacity: .26;
+      opacity: .34;
       animation-delay: -3s;
     }
 
     .ambient-three {
-      width: 120px;
-      height: 120px;
+      width: 145px;
+      height: 145px;
       right: 15vw;
       top: 48vh;
-      opacity: .22;
+      opacity: .30;
       animation-delay: -6s;
     }
 
@@ -774,6 +785,7 @@
     let currentCategory = "All";
     let currentUserRole = "viewer";
     let aboutSliderTimer = null;
+    let parallaxReady = false;
 
     function checkPassword() {
       const input = document.getElementById("passwordInput").value;
@@ -784,14 +796,36 @@
         document.getElementById("passwordScreen").style.display = "none";
         document.getElementById("homeScreen").style.display = "block";
         loadProjects();
+        setupParallax();
       } else if (input === VIEWER_PASSWORD) {
         currentUserRole = "viewer";
         document.getElementById("passwordScreen").style.display = "none";
         document.getElementById("homeScreen").style.display = "block";
         loadProjects();
+        setupParallax();
       } else {
         error.textContent = "密码不正确，请重新输入。";
       }
+    }
+
+    function setupParallax() {
+      if (parallaxReady) return;
+      parallaxReady = true;
+
+      const home = document.getElementById("homeScreen");
+      if (!home) return;
+
+      window.addEventListener("mousemove", (event) => {
+        if (home.style.display === "none") return;
+
+        const x = (event.clientX / window.innerWidth - 0.5);
+        const y = (event.clientY / window.innerHeight - 0.5);
+
+        home.style.setProperty("--bg-x", `${x * -18}px`);
+        home.style.setProperty("--bg-y", `${y * -12}px`);
+        home.style.setProperty("--shape-x", `${x * 34}px`);
+        home.style.setProperty("--shape-y", `${y * 24}px`);
+      });
     }
 
     function getClient() {
