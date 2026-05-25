@@ -692,6 +692,27 @@
       white-space: pre-line;
     }
 
+    .detail-current-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 16px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: #eee3d7;
+      color: #6c5e51;
+      font-size: 12px;
+    }
+
+    .detail-info-panel.updating {
+      animation: detailInfoPulse .22s ease;
+    }
+
+    @keyframes detailInfoPulse {
+      from { opacity: .55; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .detail-actions {
       display: flex;
       gap: 12px;
@@ -1070,7 +1091,7 @@
 
       <section class="admin-panel" id="uploadPanel">
         <h2 id="formTitle">Upload Draft Area</h2>
-        <p id="formDescription">可以一次上传多张图片。第一张会作为卡片主图，其余图片会作为同系列缩略图，点击缩略图可切换大图。</p>
+        <p id="formDescription">可以一次上传多张图片。第一张会作为卡片主图，其余图片会作为同系列缩略图；在“每张图片对应信息”中按行填写，详情页点击不同缩略图会显示不同信息。</p>
 
         <form class="admin-form" onsubmit="saveProject(event)">
           <input id="editingId" type="hidden" />
@@ -1113,6 +1134,12 @@
           <label class="full">
             设计说明
             <textarea id="description" rows="4" placeholder="简单说明产品风格、卖点和适合场景"></textarea>
+          </label>
+          <label class="full">
+            每张图片对应信息（可选，一行对应一张缩略图）
+            <textarea id="imageDetails" rows="7" placeholder="格式：标题｜尺寸｜材质｜颜色｜推荐客户｜说明
+例如：场景图｜锥形脚坐凳系列｜雪尼尔+实木｜焦糖/米白/橄榄绿｜DE / moemax｜适合柔和客厅场景
+例如：小脚凳｜Dia420 x H380 mm｜雪尼尔+实木脚｜米白｜DE｜圆润矮脚，适合搭配单人沙发"></textarea>
           </label>
           <div class="full form-buttons">
             <button id="saveButton" type="submit">上传并保存作品</button>
@@ -1350,6 +1377,100 @@
     }
 
 
+
+    function getImageDetails(project) {
+      if (!project || !project.image_details) return [];
+      if (Array.isArray(project.image_details)) return project.image_details;
+      if (typeof project.image_details === "string") {
+        try {
+          const parsed = JSON.parse(project.image_details);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+          return [];
+        }
+      }
+      return [];
+    }
+
+    function getDetailForImage(project, index) {
+      const details = getImageDetails(project);
+      const item = details[index] || {};
+      const fallbackTitle = index === 0 ? (project.title || "Untitled") : `${project.title || "Product"} ${index + 1}`;
+
+      return {
+        title: item.title || fallbackTitle,
+        category: item.category || project.category || "Uncategorized",
+        size: item.size || project.size || "-",
+        material: item.material || project.material || "-",
+        color: item.color || item.colour || "-",
+        client: item.client || project.client || "-",
+        description: item.description || project.description || "暂无说明"
+      };
+    }
+
+    function updateDetailInfo(projectId, index) {
+      const project = projects.find(item => String(item.id) === String(projectId));
+      if (!project) return;
+      const detail = getDetailForImage(project, index);
+      const images = getImages(project);
+      const safeId = String(projectId).replace(/'/g, "\\'");
+
+      const panel = document.getElementById(`detail-info-panel-${safeId}`);
+      const categoryEl = document.getElementById(`detail-category-${safeId}`);
+      const titleEl = document.getElementById(`detail-title-${safeId}`);
+      const subtitleEl = document.getElementById(`detail-subtitle-${safeId}`);
+      const sizeEl = document.getElementById(`detail-size-${safeId}`);
+      const materialEl = document.getElementById(`detail-material-${safeId}`);
+      const colorEl = document.getElementById(`detail-color-${safeId}`);
+      const clientEl = document.getElementById(`detail-client-${safeId}`);
+      const descriptionEl = document.getElementById(`detail-description-${safeId}`);
+
+      if (categoryEl) categoryEl.textContent = detail.category;
+      if (titleEl) titleEl.textContent = detail.title;
+      if (subtitleEl) subtitleEl.textContent = `Image ${index + 1} of ${Math.max(images.length, 1)} / product detail`;
+      if (sizeEl) sizeEl.textContent = detail.size;
+      if (materialEl) materialEl.textContent = detail.material;
+      if (colorEl) colorEl.textContent = detail.color;
+      if (clientEl) clientEl.textContent = detail.client;
+      if (descriptionEl) descriptionEl.textContent = detail.description;
+
+      if (panel) {
+        panel.classList.remove("updating");
+        void panel.offsetWidth;
+        panel.classList.add("updating");
+      }
+    }
+
+    function parseImageDetailsInput() {
+      const textarea = document.getElementById("imageDetails");
+      const text = textarea ? textarea.value.trim() : "";
+      if (!text) return [];
+
+      return text.split("\n").map(line => line.trim()).filter(Boolean).map(line => {
+        const parts = line.split(/[｜|]/).map(part => part.trim());
+        return {
+          title: parts[0] || "",
+          size: parts[1] || "",
+          material: parts[2] || "",
+          color: parts[3] || "",
+          client: parts[4] || "",
+          description: parts.slice(5).join("｜") || ""
+        };
+      });
+    }
+
+    function formatImageDetailsForForm(details) {
+      if (!Array.isArray(details) || !details.length) return "";
+      return details.map(item => [
+        item.title || "",
+        item.size || "",
+        item.material || "",
+        item.color || item.colour || "",
+        item.client || "",
+        item.description || ""
+      ].join("｜")).join("\n");
+    }
+
     function openProjectDetail(id) {
       const project = projects.find(item => String(item.id) === String(id));
       if (!project) return;
@@ -1362,6 +1483,7 @@
       const images = getImages(project);
       const mainImage = images[0] || "";
       const safeId = String(project.id).replace(/'/g, "\\'");
+      const selectedDetail = getDetailForImage(project, 0);
 
       if (sectionTitle) sectionTitle.style.display = "none";
       if (grid) grid.style.display = "none";
@@ -1374,30 +1496,34 @@
             <div class="detail-main-image">
               ${mainImage ? `<img id="detail-main-image-${safeId}" src="${mainImage}" alt="${project.title || 'design project'}" />` : "暂无图片"}
             </div>
-            ${images.length ? `<div class="detail-thumbs">${images.map((url, index) => `<img class="${index === 0 ? 'active-detail-thumb' : ''}" src="${url}" alt="detail image" onclick="showDetailImage('${safeId}', '${url}', this)" />`).join("")}</div>` : ""}
+            ${images.length ? `<div class="detail-thumbs">${images.map((url, index) => `<img class="${index === 0 ? 'active-detail-thumb' : ''}" src="${url}" alt="detail image" onclick="showDetailImage('${safeId}', ${index}, '${url}', this)" />`).join("")}</div>` : ""}
           </div>
 
-          <aside class="detail-info-panel">
-            <span class="tag">${project.category || "Uncategorized"}</span>
-            <h1>${project.title || "Untitled"}</h1>
-            <p class="detail-subtitle">Series detail / product development archive</p>
+          <aside class="detail-info-panel" id="detail-info-panel-${safeId}">
+            <span class="tag" id="detail-category-${safeId}">${selectedDetail.category}</span>
+            <h1 id="detail-title-${safeId}">${selectedDetail.title}</h1>
+            <p class="detail-subtitle" id="detail-subtitle-${safeId}">Image 1 of ${Math.max(images.length, 1)} / product detail</p>
 
             <div class="detail-specs">
               <div class="detail-spec-row">
                 <div class="detail-spec-label">Size</div>
-                <div class="detail-spec-value">${project.size || "-"}</div>
+                <div class="detail-spec-value" id="detail-size-${safeId}">${selectedDetail.size}</div>
               </div>
               <div class="detail-spec-row">
                 <div class="detail-spec-label">Material</div>
-                <div class="detail-spec-value">${project.material || "-"}</div>
+                <div class="detail-spec-value" id="detail-material-${safeId}">${selectedDetail.material}</div>
+              </div>
+              <div class="detail-spec-row">
+                <div class="detail-spec-label">Color</div>
+                <div class="detail-spec-value" id="detail-color-${safeId}">${selectedDetail.color}</div>
               </div>
               <div class="detail-spec-row">
                 <div class="detail-spec-label">Client</div>
-                <div class="detail-spec-value">${project.client || "-"}</div>
+                <div class="detail-spec-value" id="detail-client-${safeId}">${selectedDetail.client}</div>
               </div>
             </div>
 
-            <div class="detail-description">${project.description || "暂无说明"}</div>
+            <div class="detail-description" id="detail-description-${safeId}">${selectedDetail.description}</div>
 
             ${currentUserRole === "admin" ? `
               <div class="detail-actions">
@@ -1425,7 +1551,7 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    function showDetailImage(projectId, imageUrl, thumbElement) {
+    function showDetailImage(projectId, imageIndex, imageUrl, thumbElement) {
       const mainImage = document.getElementById(`detail-main-image-${projectId}`);
       if (mainImage) mainImage.src = imageUrl;
 
@@ -1433,6 +1559,7 @@
       if (!detailPage) return;
       detailPage.querySelectorAll(".detail-thumbs img").forEach(img => img.classList.remove("active-detail-thumb"));
       if (thumbElement) thumbElement.classList.add("active-detail-thumb");
+      updateDetailInfo(projectId, imageIndex);
     }
 
     function editProjectFromDetail(id) {
@@ -1506,13 +1633,20 @@
         const files = document.getElementById("imageFile").files;
         const uploadedUrls = files && files.length ? await uploadImages(files) : [];
         let finalImages = uploadedUrls.length ? uploadedUrls : [existingImageUrl, ...existingGalleryUrls].filter(Boolean);
+        let finalImageDetails = parseImageDetailsInput();
 
         const coverIndexInput = Number(document.getElementById("coverIndex").value || 1);
         const coverIndex = Math.max(0, Math.min(finalImages.length - 1, coverIndexInput - 1));
         if (finalImages.length > 1 && coverIndex > 0) {
           const coverImage = finalImages.splice(coverIndex, 1)[0];
           finalImages.unshift(coverImage);
+          if (finalImageDetails.length) {
+            const coverDetail = finalImageDetails.splice(coverIndex, 1)[0] || {};
+            finalImageDetails.unshift(coverDetail);
+          }
         }
+
+        finalImageDetails = finalImages.map((_, index) => finalImageDetails[index] || {});
 
         const projectData = {
           title: document.getElementById("title").value,
@@ -1522,7 +1656,8 @@
           client: document.getElementById("client").value,
           description: document.getElementById("description").value,
           image_url: finalImages[0] || "",
-          gallery_urls: finalImages.slice(1)
+          gallery_urls: finalImages.slice(1),
+          image_details: finalImageDetails
         };
 
         let error;
@@ -1558,6 +1693,7 @@
       document.getElementById("material").value = project.material || "";
       document.getElementById("client").value = project.client || "";
       document.getElementById("description").value = project.description || "";
+      document.getElementById("imageDetails").value = formatImageDetailsForForm(getImageDetails(project));
       document.getElementById("imageFile").value = "";
       document.getElementById("coverIndex").value = "1";
 
@@ -1590,9 +1726,10 @@
       document.getElementById("editingId").value = "";
       document.getElementById("existingImageUrl").value = "";
       document.getElementById("existingGalleryUrls").value = "";
+      document.getElementById("imageDetails").value = "";
       document.getElementById("coverIndex").value = "1";
       document.getElementById("formTitle").textContent = "Upload Draft Area";
-      document.getElementById("formDescription").textContent = "可以一次上传多张图片。第一张会作为卡片主图，其余图片会作为同系列缩略图，点击缩略图可切换大图。";
+      document.getElementById("formDescription").textContent = "可以一次上传多张图片。第一张会作为卡片主图，其余图片会作为同系列缩略图；在“每张图片对应信息”中按行填写，详情页点击不同缩略图会显示不同信息。";
       document.getElementById("saveButton").textContent = "上传并保存作品";
       document.getElementById("statusMessage").textContent = "";
     }
