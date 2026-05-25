@@ -679,6 +679,94 @@
 
     .status { margin-top: 14px; color: #6f6258; font-size: 14px; min-height: 22px; }
 
+
+    /* Archive sticky header: fixed while scrolling */
+    .archive-sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      background: rgba(247, 243, 238, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 12px 34px rgba(72, 58, 44, 0.10);
+      border-bottom: 1px solid rgba(120, 100, 80, 0.10);
+      overflow: hidden;
+      --archive-leaf-x: 0px;
+      --archive-nav-x: 0px;
+    }
+
+    .archive-sticky-header::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(120,100,80,0), rgba(120,100,80,.18), rgba(120,100,80,0));
+      pointer-events: none;
+    }
+
+    .archive-leaf-shadow {
+      position: absolute;
+      top: -34px;
+      left: 7vw;
+      width: 420px;
+      height: 210px;
+      pointer-events: none;
+      opacity: .28;
+      filter: blur(16px);
+      transform: translateX(var(--archive-leaf-x)) rotate(-8deg);
+      transition: transform .22s ease-out;
+      background:
+        radial-gradient(ellipse at 18% 32%, rgba(116,128,86,.18) 0%, rgba(116,128,86,0) 55%),
+        radial-gradient(ellipse at 42% 24%, rgba(116,128,86,.14) 0%, rgba(116,128,86,0) 52%),
+        radial-gradient(ellipse at 70% 36%, rgba(116,128,86,.12) 0%, rgba(116,128,86,0) 54%),
+        radial-gradient(ellipse at 86% 22%, rgba(255,255,255,.20) 0%, rgba(255,255,255,0) 48%);
+    }
+
+    .archive-sticky-header .back-home-bar {
+      position: relative;
+      z-index: 2;
+      background: transparent;
+      padding: 16px 6vw 0;
+    }
+
+    .archive-sticky-header header {
+      position: relative;
+      z-index: 2;
+      background: transparent;
+      border-bottom: none;
+      padding: 24px 6vw 28px;
+    }
+
+    .archive-sticky-header nav {
+      transform: translateX(var(--archive-nav-x));
+      transition: transform .22s ease-out;
+    }
+
+    .archive-sticky-header .back-home-btn,
+    .archive-sticky-header nav button {
+      background: rgba(255,250,244,.58);
+      border-color: rgba(120,100,80,.16);
+      box-shadow: 0 4px 14px rgba(72,58,44,.04);
+      transition: transform .22s ease, background .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .archive-sticky-header .back-home-btn:hover,
+    .archive-sticky-header nav button:hover {
+      background: rgba(255,250,244,.92);
+      border-color: rgba(120,100,80,.24);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(72,58,44,.10), 0 0 16px rgba(255,210,170,.20);
+    }
+
+    .archive-sticky-header nav button.active {
+      background: #2f2a25;
+      color: white;
+      border-color: #2f2a25;
+      box-shadow: 0 8px 22px rgba(47,42,37,.16), 0 0 18px rgba(255,210,170,.12);
+    }
+
     @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
     @media (max-width: 900px) {
@@ -761,28 +849,31 @@
   </section>
 
   <div id="archivePage">
-    <div class="back-home-bar">
-      <button class="back-home-btn" onclick="goHome()">← Back to Home</button>
-    </div>
-
-    <header>
-      <div class="brand">
-        <h1>Zhuzi Design Archive</h1>
-        <p>个人家具设计稿资料库，用于整理柜子、边几茶几、单人沙发、脚凳等产品概念，适合欧洲客户开发提案。</p>
+    <div class="archive-sticky-header" id="archiveStickyHeader">
+      <div class="archive-leaf-shadow"></div>
+      <div class="back-home-bar">
+        <button class="back-home-btn" onclick="goHome()">← Back to Home</button>
       </div>
-      <nav>
-        <button class="active" onclick="filterProjects('All', this)">All</button>
-        <button onclick="filterProjects('Cabinet', this)">Cabinet</button>
-        <button onclick="filterProjects('Side Table', this)">Side Table</button>
-        <button onclick="filterProjects('Armchair', this)">Armchair</button>
-        <button onclick="filterProjects('Ottoman', this)">Ottoman</button>
-      </nav>
-    </header>
+
+      <header>
+        <div class="brand">
+          <h1>Zhuzi Design Archive</h1>
+
+        </div>
+        <nav>
+          <button class="active" onclick="filterProjects('All', this)">All</button>
+          <button onclick="filterProjects('Cabinet', this)">Cabinet</button>
+          <button onclick="filterProjects('Side Table', this)">Side Table</button>
+          <button onclick="filterProjects('Armchair', this)">Armchair</button>
+          <button onclick="filterProjects('Ottoman', this)">Ottoman</button>
+        </nav>
+      </header>
+    </div>
 
     <main>
       <div class="section-title">
         <h2>Design Projects</h2>
-        <span>Private portfolio / product development archive</span>
+   
       </div>
 
       <section class="grid" id="projectGrid"></section>
@@ -898,6 +989,25 @@
         home.style.setProperty("--bg-y", `${y * -12}px`);
         home.style.setProperty("--shape-x", `${x * 34}px`);
         home.style.setProperty("--shape-y", `${y * 24}px`);
+      });
+    }
+
+
+
+    function setupArchiveHeaderParallax() {
+      const stickyHeader = document.getElementById("archiveStickyHeader");
+      if (!stickyHeader) return;
+
+      stickyHeader.addEventListener("mousemove", (event) => {
+        const rect = stickyHeader.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        stickyHeader.style.setProperty("--archive-leaf-x", `${x * 28}px`);
+        stickyHeader.style.setProperty("--archive-nav-x", `${x * 10}px`);
+      });
+
+      stickyHeader.addEventListener("mouseleave", () => {
+        stickyHeader.style.setProperty("--archive-leaf-x", "0px");
+        stickyHeader.style.setProperty("--archive-nav-x", "0px");
       });
     }
 
@@ -1189,6 +1299,8 @@
       document.getElementById("saveButton").textContent = "上传并保存作品";
       document.getElementById("statusMessage").textContent = "";
     }
+
+    setupArchiveHeaderParallax();
   </script>
 </body>
 </html>
