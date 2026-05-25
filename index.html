@@ -534,6 +534,183 @@
       box-shadow: 0 10px 30px rgba(0,0,0,.035);
     }
 
+
+    .card {
+      cursor: pointer;
+      transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 48px rgba(0,0,0,.06);
+      border-color: #ded2c6;
+    }
+
+    .detail-page {
+      display: none;
+      animation: detailFade .28s ease;
+    }
+
+    @keyframes detailFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .detail-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .detail-back-btn {
+      border: 1px solid #d8cec3;
+      background: #fffaf4;
+      color: #423b35;
+      padding: 11px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,.035);
+    }
+
+    .detail-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr);
+      gap: 34px;
+      align-items: start;
+    }
+
+    .detail-gallery,
+    .detail-info-panel {
+      background: #fffaf4;
+      border: 1px solid #ebe2d8;
+      border-radius: 32px;
+      box-shadow: 0 18px 56px rgba(0,0,0,.045);
+    }
+
+    .detail-gallery {
+      padding: 24px;
+    }
+
+    .detail-main-image {
+      height: min(68vh, 680px);
+      min-height: 420px;
+      background: #f7f3ee;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .detail-main-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .detail-thumbs {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-top: 16px;
+    }
+
+    .detail-thumbs img {
+      width: 74px;
+      height: 74px;
+      object-fit: contain;
+      border-radius: 16px;
+      background: #f7f3ee;
+      border: 1px solid #eee5dc;
+      padding: 5px;
+      cursor: pointer;
+      flex: 0 0 auto;
+      transition: .2s ease;
+    }
+
+    .detail-thumbs img:hover { transform: translateY(-2px); border-color: #c6b6a7; }
+    .detail-thumbs img.active-detail-thumb { border-color: #2f2a25; box-shadow: 0 0 0 2px rgba(47,42,37,.08); }
+
+    .detail-info-panel {
+      padding: clamp(24px, 3vw, 42px);
+      position: sticky;
+      top: 210px;
+    }
+
+    .detail-info-panel .tag {
+      margin-bottom: 18px;
+    }
+
+    .detail-info-panel h1 {
+      margin: 0 0 18px;
+      font-size: clamp(32px, 4vw, 54px);
+      line-height: 1.02;
+      font-weight: 400;
+      letter-spacing: -.045em;
+    }
+
+    .detail-subtitle {
+      color: #8a7d70;
+      line-height: 1.7;
+      margin: 0 0 28px;
+      font-size: 15px;
+    }
+
+    .detail-specs {
+      display: grid;
+      gap: 12px;
+      padding: 22px 0;
+      border-top: 1px solid #eee5dc;
+      border-bottom: 1px solid #eee5dc;
+    }
+
+    .detail-spec-row {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 14px;
+      align-items: start;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .detail-spec-label {
+      color: #9a8d80;
+    }
+
+    .detail-spec-value {
+      color: #3f3832;
+    }
+
+    .detail-description {
+      margin-top: 24px;
+      color: #4f4740;
+      font-size: 15px;
+      line-height: 1.9;
+      white-space: pre-line;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .detail-actions button {
+      flex: 1;
+      border: 1px solid #d8cec3;
+      background: #fffaf4;
+      color: #3a332d;
+      padding: 12px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .detail-actions button.delete { color: #a8483b; border-color: #e3c1b9; }
+
     .image-box {
       height: 430px;
       background: #f7f3ee;
@@ -778,11 +955,17 @@
       header { display: block; }
       nav { justify-content: flex-start; margin-top: 24px; }
       .admin-form { grid-template-columns: 1fr; }
+
+      .detail-layout { grid-template-columns: 1fr; }
+      .detail-info-panel { position: static; }
+      .detail-main-image { height: 520px; }
+
     }
 
     @media (max-width: 640px) {
       .grid { grid-template-columns: 1fr; }
       .image-box { height: 360px; }
+      .detail-main-image { height: 420px; min-height: 320px; }
       .form-buttons { flex-direction: column; }
       .home-content h1 { font-size: 40px; }
       .about-slider-wrap { width: 100%; }
@@ -858,7 +1041,7 @@
       <header>
         <div class="brand">
           <h1>Zhuzi Design Archive</h1>
-
+         
         </div>
         <nav>
           <button class="active" onclick="filterProjects('All', this)">All</button>
@@ -873,10 +1056,17 @@
     <main>
       <div class="section-title">
         <h2>Design Projects</h2>
-   
+     
       </div>
 
       <section class="grid" id="projectGrid"></section>
+
+      <section class="detail-page" id="detailPage">
+        <div class="detail-topbar">
+          <button class="detail-back-btn" onclick="closeProjectDetail()">← Back to Projects</button>
+        </div>
+        <div id="detailContent"></div>
+      </section>
 
       <section class="admin-panel" id="uploadPanel">
         <h2 id="formTitle">Upload Draft Area</h2>
@@ -1063,6 +1253,13 @@
       const uploadPanel = document.getElementById("uploadPanel");
       if (uploadPanel) uploadPanel.style.display = currentUserRole === "admin" ? "block" : "none";
 
+      const detailPage = document.getElementById("detailPage");
+      const sectionTitle = document.querySelector(".section-title");
+      const grid = document.getElementById("projectGrid");
+      if (detailPage) detailPage.style.display = "none";
+      if (sectionTitle) sectionTitle.style.display = "flex";
+      if (grid) grid.style.display = "grid";
+
       currentCategory = category;
       renderProjects();
 
@@ -1129,33 +1326,123 @@
       grid.innerHTML = list.map(project => {
         const images = getImages(project);
         const mainImage = images[0] || "";
-        const projectId = String(project.id).replace(/'/g, "\'");
+        const projectId = String(project.id).replace(/'/g, "\\'");
 
         return `
-          <article class="card" id="card-${projectId}">
+          <article class="card" id="card-${projectId}" onclick="openProjectDetail('${projectId}')">
             <div class="image-box">
               ${mainImage ? `<img id="main-image-${projectId}" src="${mainImage}" alt="${project.title || 'design project'}" />` : "Image Placeholder<br/>暂无图片"}
             </div>
-            ${images.length ? `<div class="thumb-row">${images.map((url, index) => `<img class="${index === 0 ? 'active-thumb' : ''}" src="${url}" alt="series image" onclick="showMainImage('${projectId}', '${url}', this)" />`).join("")}</div>` : ""}
+            ${images.length ? `<div class="thumb-row">${images.map((url, index) => `<img class="${index === 0 ? 'active-thumb' : ''}" src="${url}" alt="series image" onclick="event.stopPropagation(); showMainImage('${projectId}', '${url}', this)" />`).join("")}</div>` : ""}
             <div class="card-content">
               <span class="tag">${project.category || "Uncategorized"}</span>
               <h3>${project.title || "Untitled"}</h3>
-              <div class="info">
-                <div><strong>Size:</strong> ${project.size || "-"}</div>
-                <div><strong>Material:</strong> ${project.material || "-"}</div>
-                <div><strong>Client:</strong> ${project.client || "-"}</div>
-              </div>
-              <div class="note">${project.description || "暂无说明"}</div>
               ${currentUserRole === "admin" ? `
                 <div class="card-actions">
-                  <button onclick="editProject('${projectId}')">编辑</button>
-                  <button class="delete" onclick="deleteProject('${projectId}')">删除</button>
+                  <button onclick="event.stopPropagation(); editProject('${projectId}')">编辑</button>
+                  <button class="delete" onclick="event.stopPropagation(); deleteProject('${projectId}')">删除</button>
                 </div>
               ` : ""}
             </div>
           </article>
         `;
       }).join("");
+    }
+
+
+    function openProjectDetail(id) {
+      const project = projects.find(item => String(item.id) === String(id));
+      if (!project) return;
+
+      const sectionTitle = document.querySelector(".section-title");
+      const grid = document.getElementById("projectGrid");
+      const detailPage = document.getElementById("detailPage");
+      const detailContent = document.getElementById("detailContent");
+      const uploadPanel = document.getElementById("uploadPanel");
+      const images = getImages(project);
+      const mainImage = images[0] || "";
+      const safeId = String(project.id).replace(/'/g, "\\'");
+
+      if (sectionTitle) sectionTitle.style.display = "none";
+      if (grid) grid.style.display = "none";
+      if (uploadPanel) uploadPanel.style.display = "none";
+      if (detailPage) detailPage.style.display = "block";
+
+      detailContent.innerHTML = `
+        <div class="detail-layout">
+          <div class="detail-gallery">
+            <div class="detail-main-image">
+              ${mainImage ? `<img id="detail-main-image-${safeId}" src="${mainImage}" alt="${project.title || 'design project'}" />` : "暂无图片"}
+            </div>
+            ${images.length ? `<div class="detail-thumbs">${images.map((url, index) => `<img class="${index === 0 ? 'active-detail-thumb' : ''}" src="${url}" alt="detail image" onclick="showDetailImage('${safeId}', '${url}', this)" />`).join("")}</div>` : ""}
+          </div>
+
+          <aside class="detail-info-panel">
+            <span class="tag">${project.category || "Uncategorized"}</span>
+            <h1>${project.title || "Untitled"}</h1>
+            <p class="detail-subtitle">Series detail / product development archive</p>
+
+            <div class="detail-specs">
+              <div class="detail-spec-row">
+                <div class="detail-spec-label">Size</div>
+                <div class="detail-spec-value">${project.size || "-"}</div>
+              </div>
+              <div class="detail-spec-row">
+                <div class="detail-spec-label">Material</div>
+                <div class="detail-spec-value">${project.material || "-"}</div>
+              </div>
+              <div class="detail-spec-row">
+                <div class="detail-spec-label">Client</div>
+                <div class="detail-spec-value">${project.client || "-"}</div>
+              </div>
+            </div>
+
+            <div class="detail-description">${project.description || "暂无说明"}</div>
+
+            ${currentUserRole === "admin" ? `
+              <div class="detail-actions">
+                <button onclick="editProjectFromDetail('${safeId}')">编辑</button>
+                <button class="delete" onclick="deleteProjectFromDetail('${safeId}')">删除</button>
+              </div>
+            ` : ""}
+          </aside>
+        </div>
+      `;
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function closeProjectDetail() {
+      const sectionTitle = document.querySelector(".section-title");
+      const grid = document.getElementById("projectGrid");
+      const detailPage = document.getElementById("detailPage");
+      const uploadPanel = document.getElementById("uploadPanel");
+
+      if (detailPage) detailPage.style.display = "none";
+      if (sectionTitle) sectionTitle.style.display = "flex";
+      if (grid) grid.style.display = "grid";
+      if (uploadPanel) uploadPanel.style.display = currentUserRole === "admin" ? "block" : "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showDetailImage(projectId, imageUrl, thumbElement) {
+      const mainImage = document.getElementById(`detail-main-image-${projectId}`);
+      if (mainImage) mainImage.src = imageUrl;
+
+      const detailPage = document.getElementById("detailPage");
+      if (!detailPage) return;
+      detailPage.querySelectorAll(".detail-thumbs img").forEach(img => img.classList.remove("active-detail-thumb"));
+      if (thumbElement) thumbElement.classList.add("active-detail-thumb");
+    }
+
+    function editProjectFromDetail(id) {
+      closeProjectDetail();
+      setTimeout(() => editProject(id), 120);
+    }
+
+    async function deleteProjectFromDetail(id) {
+      await deleteProject(id);
+      closeProjectDetail();
     }
 
     function showMainImage(projectId, imageUrl, thumbElement) {
@@ -1172,6 +1459,16 @@
       currentCategory = category;
       document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
       button.classList.add("active");
+
+      const detailPage = document.getElementById("detailPage");
+      const sectionTitle = document.querySelector(".section-title");
+      const grid = document.getElementById("projectGrid");
+      const uploadPanel = document.getElementById("uploadPanel");
+      if (detailPage) detailPage.style.display = "none";
+      if (sectionTitle) sectionTitle.style.display = "flex";
+      if (grid) grid.style.display = "grid";
+      if (uploadPanel) uploadPanel.style.display = currentUserRole === "admin" ? "block" : "none";
+
       renderProjects();
     }
 
