@@ -1549,7 +1549,7 @@
     <button class="hot-editor-toggle" type="button" aria-controls="hotEditorPanel" aria-expanded="false">编辑 / 上传</button>
     <aside class="hot-editor-panel" id="hotEditorPanel" aria-label="爆品展示编辑面板">
       <h2>爆品展示编辑面板</h2>
-      <p>文字可直接点击页面内容修改，图片在这里上传。修改会自动保存在当前浏览器。</p>
+      <p>文字可直接点击页面内容修改，图片在这里上传。修改会同步到 Supabase，访客刷新后可见。</p>
 
       <details open>
         <summary>首页图片</summary>
@@ -1569,7 +1569,7 @@
       <div class="hot-helper">图片尺寸规范：产品图用透明 PNG、1:1、主体居中、四周留白 10%-15%；场景图用 16:9 或 4:3，产品不要贴边。</div>
       <div class="hot-editor-actions">
         <button type="button" id="hotExportButton">导出文字数据</button>
-        <button type="button" id="hotResetButton">清空本机修改</button>
+        <button type="button" id="hotResetButton">清空线上修改</button>
       </div>
     </aside>
 
@@ -2543,16 +2543,31 @@
 
   <script>
     (function initHotProductsShowcase() {
-      const TEXT_PREFIX = "hot-products-text:";
-      const IMAGE_PREFIX = "hot-products-image:";
-      const DB_NAME = "hot-products-showcase-images";
-      const DB_STORE = "images";
-
+      const HOT_TABLE = "hot_products_showcase";
+      const HOT_BUCKET = "design-images";
+      const HOT_IMAGE_KEYS = ["hero", "scene-toast", "product-toast", "scene-biscuit", "product-biscuit", "scene-bagel", "product-bagel", "scene-egg", "product-egg", "scene-milk", "product-milk", "scene-orange", "product-orange"];
       const editorToggle = document.querySelector(".hot-editor-toggle");
       const editorPanel = document.querySelector("#hotEditorPanel");
 
       function isHotAdmin() {
         return typeof currentUserRole !== "undefined" && currentUserRole === "admin";
+      }
+
+      function getHotClient() {
+        if (typeof getClient === "function") return getClient();
+        if (!supabaseClient) supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        return supabaseClient;
+      }
+
+      function showHotStatus(message) {
+        let status = document.querySelector("#hotSyncStatus");
+        if (!status && editorPanel) {
+          status = document.createElement("div");
+          status.id = "hotSyncStatus";
+          status.className = "hot-helper";
+          editorPanel.appendChild(status);
+        }
+        if (status) status.textContent = message || "";
       }
 
       function updateHotProductsPermissions() {
@@ -2583,60 +2598,72 @@
         });
       }
 
-      function openImageDB() {
-        return new Promise((resolve, reject) => {
-          const request = indexedDB.open(DB_NAME, 1);
-          request.onupgradeneeded = () => request.result.createObjectStore(DB_STORE);
-          request.onsuccess = () => resolve(request.result);
-          request.onerror = () => reject(request.error);
-        });
-      }
-
-      async function setStoredImage(key, dataUrl) {
-        const db = await openImageDB();
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(DB_STORE, "readwrite");
-          tx.objectStore(DB_STORE).put(dataUrl, IMAGE_PREFIX + key);
-          tx.oncomplete = () => resolve();
-          tx.onerror = () => reject(tx.error);
-        });
-      }
-
-      async function getStoredImage(key) {
-        const db = await openImageDB();
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(DB_STORE, "readonly");
-          const request = tx.objectStore(DB_STORE).get(IMAGE_PREFIX + key);
-          request.onsuccess = () => resolve(request.result);
-          request.onerror = () => reject(request.error);
-        });
-      }
-
-      async function clearStoredImages() {
-        const db = await openImageDB();
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(DB_STORE, "readwrite");
-          tx.objectStore(DB_STORE).clear();
-          tx.oncomplete = () => resolve();
-          tx.onerror = () => reject(tx.error);
-        });
-      }
-
-      function applyImage(key, dataUrl) {
+      function applyImage(key, url) {
+        if (!url) return;
         if (key === "hero") {
-          document.querySelector(".hot-products-page")?.style.setProperty("--hot-hero-bg", `url("${dataUrl}")`);
+          document.querySelector(".hot-products-page")?.style.setProperty("--hot-hero-bg", `url("${url}")`);
           return;
         }
-        document.querySelectorAll(`[data-hot-image-key="${key}"]`).forEach((img) => { img.src = dataUrl; });
+        document.querySelectorAll(`[data-hot-image-key="${key}"]`).forEach((img) => { img.src = url; });
+      }
+
+      async function saveHotValue(key, value, type) {
+        if (!isHotAdmin()) return;
+        const client = getHotClient();
+        const { error } = await client.from(HOT_TABLE).upsert({
+          key,
+          value,
+          type,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "key" });
+        if (error) {
+          console.error("Hot products sync failed:", error);
+          showHotStatus("保存失败：" + error.message);
+          throw error;
+        }
+        showHotStatus("已同步到线上，访客刷新后可见。");
+      }
+
+      async function loadHotValues() {
+        try {
+          const client = getHotClient();
+          const { data, error } = await client.from(HOT_TABLE).select("key,value,type");
+          if (error) throw error;
+          (data || []).forEach((item) => {
+            if (!item || !item.key) return;
+            if (item.type === "text") {
+              const editKey = item.key.replace(/^text:/, "");
+              document.querySelectorAll(`[data-hot-edit-key="${editKey}"]`).forEach((el) => { el.innerHTML = item.value || ""; });
+            }
+            if (item.type === "image") {
+              const imageKey = item.key.replace(/^image:/, "");
+              applyImage(imageKey, item.value);
+            }
+          });
+          showHotStatus("线上内容已读取。");
+        } catch (error) {
+          console.error("Hot products load failed:", error);
+          showHotStatus("读取线上内容失败：请检查 Supabase 表 hot_products_showcase 和 RLS 权限。" + (error.message ? "（" + error.message + "）" : ""));
+        }
+      }
+
+      function debounce(fn, delay = 700) {
+        let timer = null;
+        return (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => fn(...args), delay);
+        };
       }
 
       document.querySelectorAll("[data-hot-edit-key]").forEach((el) => {
-        const key = TEXT_PREFIX + el.dataset.hotEditKey;
-        const saved = localStorage.getItem(key);
-        if (saved !== null) el.innerHTML = saved;
-        el.addEventListener("input", () => {
+        const saveText = debounce(() => {
           if (!isHotAdmin()) return;
-          localStorage.setItem(key, el.innerHTML);
+          saveHotValue("text:" + el.dataset.hotEditKey, el.innerHTML, "text").catch(() => {});
+        });
+        el.addEventListener("input", saveText);
+        el.addEventListener("blur", () => {
+          if (!isHotAdmin()) return;
+          saveHotValue("text:" + el.dataset.hotEditKey, el.innerHTML, "text").catch(() => {});
         });
         el.addEventListener("paste", (event) => {
           if (!isHotAdmin()) return;
@@ -2646,44 +2673,53 @@
         });
       });
 
+      async function uploadHotImage(key, file) {
+        const client = getHotClient();
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        const filePath = `hot-products/${key}-${Date.now()}.${ext}`;
+        const { error: uploadError } = await client.storage.from(HOT_BUCKET).upload(filePath, file, { upsert: true, contentType: file.type || undefined });
+        if (uploadError) throw uploadError;
+        const { data } = client.storage.from(HOT_BUCKET).getPublicUrl(filePath);
+        if (!data || !data.publicUrl) throw new Error("没有拿到图片公开链接，请检查 Storage bucket 是否为 public。 ");
+        return data.publicUrl;
+      }
+
       document.querySelectorAll("[data-hot-image-target]").forEach((input) => {
-        input.addEventListener("change", () => {
+        input.addEventListener("change", async () => {
           if (!isHotAdmin()) {
             input.value = "";
             return;
           }
           const file = input.files && input.files[0];
           if (!file) return;
-          const reader = new FileReader();
           const key = input.dataset.hotImageTarget;
-          reader.onload = async () => {
-            const dataUrl = reader.result;
-            applyImage(key, dataUrl);
-            try { await setStoredImage(key, dataUrl); }
-            catch (error) { alert("图片已临时显示，但浏览器本地存储空间不足，刷新后可能不会保留。"); }
-          };
-          reader.readAsDataURL(file);
+          try {
+            showHotStatus("正在上传图片...");
+            const url = await uploadHotImage(key, file);
+            applyImage(key, url);
+            await saveHotValue("image:" + key, url, "image");
+            input.value = "";
+          } catch (error) {
+            console.error("Hot image upload failed:", error);
+            showHotStatus("图片上传失败：" + (error.message || error));
+            alert("图片上传失败：" + (error.message || error));
+          }
         });
       });
 
-      async function restoreImages() {
-        const keys = ["hero", "scene-toast", "product-toast", "scene-biscuit", "product-biscuit", "scene-bagel", "product-bagel", "scene-egg", "product-egg", "scene-milk", "product-milk", "scene-orange", "product-orange"];
-        for (const key of keys) {
-          try {
-            const dataUrl = await getStoredImage(key);
-            if (dataUrl) applyImage(key, dataUrl);
-          } catch (error) {
-            console.warn("Hot products image restore failed", key, error);
-          }
-        }
-      }
-
       document.querySelector("#hotResetButton")?.addEventListener("click", async () => {
         if (!isHotAdmin()) return;
-        if (!confirm("确定清空当前浏览器保存的爆品展示文字和图片修改吗？")) return;
-        Object.keys(localStorage).forEach((key) => { if (key.startsWith(TEXT_PREFIX)) localStorage.removeItem(key); });
-        await clearStoredImages();
-        location.reload();
+        if (!confirm("确定清空线上爆品展示修改吗？访客也会恢复到代码默认内容。")) return;
+        try {
+          const client = getHotClient();
+          const { error } = await client.from(HOT_TABLE).delete().neq("key", "__never__");
+          if (error) throw error;
+          alert("线上爆品展示数据已清空。页面将刷新。 ");
+          location.reload();
+        } catch (error) {
+          console.error(error);
+          alert("清空失败：" + (error.message || error));
+        }
       });
 
       document.querySelector("#hotExportButton")?.addEventListener("click", () => {
@@ -2699,7 +2735,7 @@
         URL.revokeObjectURL(url);
       });
 
-      restoreImages();
+      loadHotValues();
       updateHotProductsPermissions();
     })();
   </script>
