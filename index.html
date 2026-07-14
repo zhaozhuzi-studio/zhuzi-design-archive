@@ -1497,9 +1497,9 @@
   <div class="password-screen" id="passwordScreen">
     <div class="password-card">
       <h1>Zhuzi Design Archive</h1>
-      <p>Private furniture concept archive. Please enter password to view.</p>
-      <input id="passwordInput" type="password" placeholder="请输入访问密码" />
-      <button onclick="checkPassword()">Enter</button>
+      <p>Administrator editing mode. Please enter the admin password.</p>
+      <input id="passwordInput" type="password" placeholder="请输入管理员密码" onkeydown="if(event.key === 'Enter') checkPassword()" />
+      <button onclick="checkPassword()">Enter editing mode</button>
       <div class="password-error" id="passwordError"></div>
     </div>
   </div>
@@ -1738,9 +1738,9 @@
 
   <script>
     const SITE_PASSWORD = "zhaoqing333";
-    const VIEWER_PASSWORD = "888888";
     const SUPABASE_URL = "https://qnzizwadygywroqxuszt.supabase.co";
     const SUPABASE_KEY = "sb_publishable_0R2DZniqqB2ueWAraBHNtA_FtotsnUs";
+    const EDIT_MODE = new URLSearchParams(window.location.search).get("edit") === "1";
 
     let supabaseClient = null;
     let projects = [];
@@ -1759,15 +1759,28 @@
         document.getElementById("homeScreen").style.display = "block";
         loadProjects();
         setupParallax();
-      } else if (input === VIEWER_PASSWORD) {
-        currentUserRole = "viewer";
-        document.getElementById("passwordScreen").style.display = "none";
-        document.getElementById("homeScreen").style.display = "block";
-        loadProjects();
-        setupParallax();
       } else {
         error.textContent = "密码不正确，请重新输入。";
       }
+    }
+
+    function initializeAccessMode() {
+      const passwordScreen = document.getElementById("passwordScreen");
+      const homeScreen = document.getElementById("homeScreen");
+
+      if (EDIT_MODE) {
+        currentUserRole = "viewer";
+        passwordScreen.style.display = "flex";
+        homeScreen.style.display = "none";
+        document.getElementById("passwordInput")?.focus();
+        return;
+      }
+
+      currentUserRole = "viewer";
+      passwordScreen.style.display = "none";
+      homeScreen.style.display = "block";
+      loadProjects();
+      setupParallax();
     }
 
     function setupParallax() {
@@ -2560,6 +2573,7 @@
 
     setupStructuredEditorEvents();
     setupArchiveHeaderParallax();
+    initializeAccessMode();
   </script>
 
 
